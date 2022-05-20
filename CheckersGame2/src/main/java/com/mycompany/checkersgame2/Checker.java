@@ -34,18 +34,29 @@ public class Checker {
         this.isQueen = isQueen;
         checkers.add(this);
     }
-
+    /**
+    * This function include all moves that basic pawns and queen pawn can do at the moment.
+    */
     public void Move(int positionX, int positionY){
         try{
+            if(!NewGame.selectedChecker.white==false && NewGame.selectedChecker.positionY == 0){
+                this.isQueen = true;
+            }
+            if(!NewGame.selectedChecker.white==true && NewGame.selectedChecker.positionY == 7){
+                this.isQueen = true;
+            }
+            /**
+             * pawns moves
+             */
             if(NewGame.selectedChecker.isQueen==false){
                 if((NewGame.selectedChecker.white==false)){ 
                     if((positionY-NewGame.selectedChecker.positionY)>=2 ||
                     (NewGame.selectedChecker.positionX-positionX)>=2    || 
                     (positionX-NewGame.selectedChecker.positionX)>=2    ||
                     (positionY<NewGame.selectedChecker.positionY)){
-                        System.out.println(NewGame.selectedChecker.positionX+" "+ NewGame.selectedChecker.positionY);
                         x = this.positionX*100+5;
                         y = this.positionY*100+5;
+                        return;
                     }
                     if(NewGame.getChecker(positionX*100, positionY*100)!=null){
                         if(NewGame.getChecker(positionX*100, positionY*100).white==white){
@@ -54,15 +65,35 @@ public class Checker {
                             return;
                         }
                         if(NewGame.getChecker(positionX*100, positionY*100).white!=white){
-                            if(NewGame.selectedChecker.positionY<positionY){
-                                NewGame.getChecker(positionX*100, positionY*100).kill();
-//                                if(NewGame.selectedChecker.positionX < positionX){
-//                                    x = (this.positionX+2)*100+5;
-//                                }else{
-//                                    x = (this.positionX-2)*100+5;
-//                                }
-//                                y = (this.positionY+2)*100+5;
-//                                return;
+                            if(NewGame.selectedChecker.positionX<positionX){
+                                if(this.positionY+2<8 && NewGame.getChecker((this.positionX+2)*100, (this.positionY+2)*100)==null){
+                                    if(this.positionX+2<8){
+                                        NewGame.getChecker(positionX*100, positionY*100).kill();
+                                        this.positionX+=2;
+                                        this.positionY+=2;
+                                        x = this.positionX*100+5;
+                                        y = this.positionY*100+5;
+                                        return;
+                                    }else{
+                                        x = this.positionX*100+5;
+                                        y = this.positionY*100+5;
+                                        return;
+                                    }
+                                }
+                            }
+                            if(NewGame.selectedChecker.positionX>positionX){
+                                if(this.positionX-2>-1 && NewGame.getChecker((this.positionX-2)*100, (this.positionY+2)*100)==null){
+                                    NewGame.getChecker(positionX*100, positionY*100).kill();
+                                    this.positionX-=2;
+                                    this.positionY+=2;
+                                    x = this.positionX*100+5;
+                                    y = this.positionY*100+5;
+                                    return;
+                                }else{
+                                    x = this.positionX*100+5;
+                                    y = this.positionY*100+5;
+                                    return;
+                                }
                             }else{
                                 x = this.positionX*100+5;
                                 y = this.positionY*100+5;
@@ -76,7 +107,6 @@ public class Checker {
                         ((NewGame.selectedChecker.positionX-positionX)>=2) || 
                         ((positionX-NewGame.selectedChecker.positionX)>=2) ||
                         (positionY>NewGame.selectedChecker.positionY))){
-                        System.out.println(NewGame.selectedChecker.positionX+" "+ NewGame.selectedChecker.positionY);
                             x = this.positionX*100+5;
                             y = this.positionY*100+5;
                             return;
@@ -88,11 +118,102 @@ public class Checker {
                             return;
                         }
                         if(NewGame.getChecker(positionX*100, positionY*100).white!=white){
-                            if(NewGame.selectedChecker.positionY>positionY){
-                                NewGame.getChecker(positionX*100, positionY*100).kill();
-                                x = (this.positionX)*100+5;
-                                y = (this.positionY)*100+5;
+                            if(NewGame.selectedChecker.positionY-2>-1){
+                                if(NewGame.selectedChecker.positionX<positionX){
+                                    if(this.positionX+2<8 && NewGame.getChecker((this.positionX+2)*100, (this.positionY-2)*100)==null){
+                                        NewGame.getChecker(positionX*100, positionY*100).kill();
+                                        this.positionX+=2;
+                                        this.positionY-=2;
+                                        x = this.positionX*100+5;
+                                        y = this.positionY*100+5;
+                                        return;
+                                    }else{
+                                        x = this.positionX*100+5;
+                                        y = this.positionY*100+5;
+                                        return;
+                                    }
+                                }
+                                if(NewGame.selectedChecker.positionX>positionX){
+                                    if(this.positionX-2>=0 && NewGame.getChecker((this.positionX-2)*100, (this.positionY-2)*100)==null){
+                                        NewGame.getChecker(positionX*100, positionY*100).kill();
+                                        this.positionX-=2;
+                                        this.positionY-=2;
+                                        x = this.positionX*100+5;
+                                        y = this.positionY*100+5;
+                                        return;
+                                    }else{
+                                        x = this.positionX*100+5;
+                                        y = this.positionY*100+5;
+                                        return;
+                                    }
+                                }
                             }else{
+                                x = this.positionX*100+5;
+                                y = this.positionY*100+5;
+                                return;    
+                            }
+                        }else{
+                            x = this.positionX*100+5;
+                            y = this.positionY*100+5;
+                            return; 
+                        }
+                    }
+                }
+            }
+            /**
+             * Queen moves
+             */
+            if(NewGame.selectedChecker.isQueen==true){
+                System.out.println(NewGame.selectedChecker.positionX+" "+ NewGame.selectedChecker.positionY);
+                if((NewGame.selectedChecker.white==true)){
+                    if(NewGame.getChecker(positionX*100, positionY*100)!=null){
+                        if(NewGame.getChecker(positionX*100, positionY*100).white==white){
+                            x = this.positionX*100+5;
+                            y = this.positionY*100+5;
+                            return;
+                        }
+                        if(NewGame.getChecker(positionX*100, positionY*100).white!=white){
+                            if(this.positionX+2<8 && this.positionX-2>=0 && this.positionX+2<8 && this.positionY-2>-1){ 
+                                if(NewGame.getChecker((this.positionX+2)*100, (this.positionY+2)*100)==null){
+                                    if(NewGame.selectedChecker.positionY<positionY && NewGame.selectedChecker.positionX<positionX){
+                                        NewGame.getChecker(positionX*100, positionY*100).kill();
+                                        this.positionX+=2;
+                                        this.positionY+=2;
+                                        x = this.positionX*100+5;
+                                        y = this.positionY*100+5;
+                                        return;
+                                    }
+                                }
+                                if(NewGame.getChecker((this.positionX-2)*100, (this.positionY+2)*100)==null){
+                                    if(NewGame.selectedChecker.positionY<positionY && NewGame.selectedChecker.positionX>positionX){
+                                        NewGame.getChecker(positionX*100, positionY*100).kill();
+                                        this.positionX-=2;
+                                        this.positionY+=2;
+                                        x = this.positionX*100+5;
+                                        y = this.positionY*100+5;
+                                        return;
+                                    }
+                                }
+                                if(NewGame.getChecker((this.positionX+2)*100, (this.positionY-2)*100)==null){
+                                    if(NewGame.selectedChecker.positionY>positionY && NewGame.selectedChecker.positionX<positionX){
+                                        NewGame.getChecker(positionX*100, positionY*100).kill();
+                                        this.positionX+=2;
+                                        this.positionY-=2;
+                                        x = this.positionX*100+5;
+                                        y = this.positionY*100+5;
+                                        return;
+                                    }
+                                }
+                                if(NewGame.getChecker((this.positionX-2)*100, (this.positionY-2)*100)==null){
+                                    if(NewGame.selectedChecker.positionY>positionY && NewGame.selectedChecker.positionX>positionX){
+                                        NewGame.getChecker(positionX*100, positionY*100).kill();
+                                        this.positionX-=2;
+                                        this.positionY-=2;
+                                        x = this.positionX*100+5;
+                                        y = this.positionY*100+5;
+                                        return; 
+                                    }
+                                }
                                 x = this.positionX*100+5;
                                 y = this.positionY*100+5;
                                 return;
@@ -102,14 +223,10 @@ public class Checker {
                 }
             }
             if((positionX+positionY)%2==0){
-                    x = this.positionX*100+5;
-                    y = this.positionY*100+5;
-                    System.out.println((positionX-NewGame.selectedChecker.positionX)+ " "+
-                                positionX+ " "+NewGame.selectedChecker.positionX);
-                    return;
-                }
-            System.out.println((positionX-NewGame.selectedChecker.positionX)+ " "+
-                            positionX+ " "+NewGame.selectedChecker.positionX);
+                x = this.positionX*100+5;
+                y = this.positionY*100+5;
+                return;
+            }
             this.positionX = positionX;
             this.positionY = positionY;
             x = positionX*100+5;
