@@ -107,7 +107,6 @@ public class NewGame implements ActionListener {
                     }
                     g.fillRect(x*100, y*100, 100, 100);
                     white=!white;
-
                 }
                 white=!white;
                 }
@@ -244,7 +243,6 @@ public class NewGame implements ActionListener {
             }
         textField.setText("");
     }
-    
     public static Checker getChecker(int x, int y){
         int xposition = x/100;
         int yposition = y/100;
