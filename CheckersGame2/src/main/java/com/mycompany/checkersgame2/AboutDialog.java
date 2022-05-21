@@ -75,7 +75,7 @@ public class AboutDialog extends JFrame implements ActionListener{
         dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
     }
     /**
-     * Action listener for buttons.
+     * Action listener for button.
      * @param e 
      */
     public void actionPerformed(ActionEvent e)

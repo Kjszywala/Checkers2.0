@@ -39,7 +39,9 @@ import static javax.swing.WindowConstants.HIDE_ON_CLOSE;
  * @author Kamil
  */
 public class NewGame implements ActionListener {
-    
+    /**
+     * Variables needed to connect to the server and to set interface.
+     */
     static final int portSerwera = 6623;//192.168.1.186
     protected String adresSerwera = "192.168.1.186";//88.105.17.179
     protected InetAddress iAdres = null;
@@ -57,16 +59,18 @@ public class NewGame implements ActionListener {
     JButton sendButton = new JButton("Send");
     JScrollPane sp = new JScrollPane(textArea); 
     
+    /**
+     * Linked list of our pawns.
+     */
     public static LinkedList<Checker> checkers = new LinkedList();
     public static Checker selectedChecker = null;
 
     public NewGame(){
         
         int size = 90;
-        int HEIGHT = 100;
-        int WIDTH = 100;
-        //boolean isWhite = true;
-
+        /**
+         * Creating the pawns
+         */
         Checker wc1 = new Checker(0,7,true,checkers,false);
         Checker wc2 = new Checker(2,7,true,checkers,false);
         Checker wc3 = new Checker(4,7,true,checkers,false);
@@ -92,7 +96,10 @@ public class NewGame implements ActionListener {
         Checker bc10 = new Checker(3,2,false,checkers,false);
         Checker bc11 = new Checker(5,2,false,checkers,false);
         Checker bc12 = new Checker(7,2,false,checkers,false);
-        
+        /**
+         * Panel with the checkers board and pawns.
+         * Adding the pawns as an objects.
+         */
         JPanel checkersBoard = new JPanel(new BorderLayout());
         JPanel board=new JPanel(){
             @Override
@@ -144,7 +151,9 @@ public class NewGame implements ActionListener {
         eastBottomPanel.setBackground(Color.decode(bColour));
         sendButton.addActionListener(this);
         textField.addActionListener(this);
-        
+        /**
+         * connecting with the server
+         */
         this.connect();
         
         frame.setUndecorated(false);
@@ -153,7 +162,10 @@ public class NewGame implements ActionListener {
         frame.setResizable(false);
         frame.setVisible(true);
         frame.setDefaultCloseOperation(HIDE_ON_CLOSE);
-        
+        /**
+         * Mause motion listener, mouseDragged function has been used to move
+         * checkers.
+         */
         frame.addMouseMotionListener(new MouseMotionListener() {
             @Override
             public void mouseDragged(MouseEvent e) {
@@ -171,7 +183,9 @@ public class NewGame implements ActionListener {
             public void mouseMoved(MouseEvent e) {
             }
         });
-        
+        /**
+         * Mouse listener
+         */
         frame.addMouseListener(new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -182,11 +196,12 @@ public class NewGame implements ActionListener {
             public void mousePressed(MouseEvent e) {
                 selectedChecker = getChecker(e.getX()-40,e.getY()-40);
             }
-
+            /**
+             * Moving the pawn when mouse released.
+             */
             @Override
             public void mouseReleased(MouseEvent e) {
                 try{
-                    //System.out.println(selectedChecker.positionX+" "+selectedChecker.positionY);
                     selectedChecker.Move(e.getX()/100, e.getY()/100);
                     frame.repaint();
                 }catch(NullPointerException ex){
@@ -202,7 +217,9 @@ public class NewGame implements ActionListener {
             }
         });
     }
-
+    /**
+     * Connecting with the server.
+     */
     void connect() {
         try {
             iAdres = InetAddress.getByName(adresSerwera);
@@ -231,6 +248,10 @@ public class NewGame implements ActionListener {
             textArea.append("Error: " + e); 
         }
     }
+    /**
+     * Closing connection with the server
+     * @param g 
+     */
     @Override
     public void actionPerformed(ActionEvent g) {
         out.println(textField.getText());
@@ -244,7 +265,12 @@ public class NewGame implements ActionListener {
             }
         textField.setText("");
     }
-    
+    /**
+     * Getting the checker position x and y.
+     * @param x
+     * @param y
+     * @return 
+     */
     public static Checker getChecker(int x, int y){
         int xposition = x/100;
         int yposition = y/100;

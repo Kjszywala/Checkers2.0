@@ -15,13 +15,18 @@ import java.io.InputStreamReader;
  * @author Kamil
  */
 public class ClientThreadChat extends Thread {
-    
-    private BufferedReader in; // strumień do słuchania serwera
-    public NewGame dialog; // okno właściciel
+    /*
+        Stream for server listening
+    */
+    private BufferedReader in;
+    /*
+        New game window owner
+    */
+    public NewGame dialog;
         
     public ClientThreadChat(NewGame dialog) {
         this.dialog = dialog;
-         // kojarzę strumień z gniazdem
+         // Associate the stream
         try {
             in = new BufferedReader(new InputStreamReader(
                                     dialog.socket.getInputStream()));
@@ -34,16 +39,23 @@ public class ClientThreadChat extends Thread {
     String str=null;
     try {
         while ((str = in.readLine()) != null) {
-            //aż nie będzie końca pliku
-            // dopisuję co przeczytałem z gniazda
+            /**
+             * Until there is no end of file - 
+             * adding what is readed from the stream.
+             */
             str = in.readLine();
             dialog.textArea.append(str + "\n");
-            // poniższe by widzieć ostatni wpis do JTextArea ‘lista’
+            /**
+             * To see last input in JTextArea
+             */
             dialog.textArea.scrollRectToVisible(new Rectangle
                 (0, dialog.textArea.getHeight()-2, 1, 1));
             dialog.textArea.repaint();
         }
-        in.close(); //Zamykam strumień wejściowy od serwera
+        /**
+         * Closing the stream.
+         */
+        in.close(); 
     } catch (IOException e) { 
         dialog.textArea.append("Error: " + e); 
     }
