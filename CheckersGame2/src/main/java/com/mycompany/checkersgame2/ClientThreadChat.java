@@ -43,7 +43,7 @@ public class ClientThreadChat extends Thread {
                 (0, dialog.textArea.getHeight()-2, 1, 1));
             dialog.textArea.repaint();
         }
-    in.close(); //Zamykam strumień wejściowy od serwera
+        in.close(); //Zamykam strumień wejściowy od serwera
     } catch (IOException e) { 
         dialog.textArea.append("Error: " + e); 
     }
