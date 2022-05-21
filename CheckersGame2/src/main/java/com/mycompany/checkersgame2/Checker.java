@@ -252,7 +252,7 @@ public class Checker {
                 
             }
             /**
-             * If the position is white square go back to prewious position.
+             * If the position is white square go back to previous position.
              */
             if((positionX+positionY)%2==0){
                 x = this.positionX*100+5;
