@@ -44,6 +44,7 @@ public class NewGame implements ActionListener {
      */
     static final int portSerwera = 6623;//192.168.1.186
     protected String adresSerwera = "192.168.1.186";//88.105.17.179
+
     protected InetAddress iAdres = null;
     protected Socket socket = null; 
     protected ServerSocket serverSocket;
@@ -114,7 +115,6 @@ public class NewGame implements ActionListener {
                     }
                     g.fillRect(x*100, y*100, 100, 100);
                     white=!white;
-
                 }
                 white=!white;
                 }
@@ -236,7 +236,9 @@ public class NewGame implements ActionListener {
             textArea.append("Not connected\n");
             e.printStackTrace();
         }
-        //startuję wątek nasłuchującynew NewGame()
+        /**
+         * Starting the NewGame listening thread
+         */
         Thread thread = new ClientThreadChat(this);
         thread.start();
         try {
