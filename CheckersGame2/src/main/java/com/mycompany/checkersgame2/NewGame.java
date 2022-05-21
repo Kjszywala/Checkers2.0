@@ -59,6 +59,7 @@ public class NewGame implements ActionListener {
     JTextField textField = new JTextField(20);
     JButton sendButton = new JButton("Send");
     JScrollPane sp = new JScrollPane(textArea); 
+    JPanel board=new JPanel();
     
     /**
      * Linked list of our pawns.
@@ -102,7 +103,7 @@ public class NewGame implements ActionListener {
          * Adding the pawns as an objects.
          */
         JPanel checkersBoard = new JPanel(new BorderLayout());
-        JPanel board=new JPanel(){
+        board=new JPanel(){
             @Override
             public void paint(Graphics g) {
             boolean white=true;
