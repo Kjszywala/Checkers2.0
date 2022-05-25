@@ -60,6 +60,7 @@ public class NewGame implements ActionListener {
     JButton sendButton = new JButton("Send");
     JScrollPane sp = new JScrollPane(textArea); 
     JPanel board=new JPanel();
+    private JScrollPane scroll;
     
     /**
      * Linked list of our pawns.
@@ -140,6 +141,9 @@ public class NewGame implements ActionListener {
         JPanel eastPanel = new JPanel(new BorderLayout());
         textArea.setBorder(BorderFactory.createLineBorder(Color.BLACK));
         textArea.setEditable(false);
+        textArea.setEditable(false);
+        textArea.setLineWrap(true);
+        scroll = new JScrollPane(textArea);
         
         checkersBoard.add(eastPanel, BorderLayout.EAST);
         eastPanel.setBackground(Color.decode(bColour));
