@@ -32,11 +32,11 @@ public class Server {
         ServerSocket s = null;
         try {
             s = new ServerSocket(PORT);
-            System.out.println("Server Started");
+            System.out.println("===Server Started===\nWaiting for players...");
             while (playerID<=maxPlayer) {
                 socket = s.accept();
-                System.out.println("New Client");
                 playerID++;
+                System.out.println("New Payer x" +playerID);
                 if(playerID==1){
                     p1Socket = socket;
                 } else {
