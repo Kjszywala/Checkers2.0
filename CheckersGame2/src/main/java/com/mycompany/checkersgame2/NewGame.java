@@ -24,6 +24,7 @@ public class NewGame implements ActionListener {
     protected ServerSocket serverSocket;
     protected PrintWriter out;
     protected static int playerID;
+    protected boolean whosTurn;
     private final String bColour = "#a85a32";
     JFrame frame = new JFrame();
     JTextArea textArea = new JTextArea(10,29);
@@ -132,10 +133,9 @@ public class NewGame implements ActionListener {
          * Starting the thread which reading data from server.
          * Starting the thread which repainting the frame.
          */
-        
-        Thread thread1 = new ReadDataFromServer(socket);
         Thread thread = new RefreshBoard(this);
         thread.start();
+        Thread thread1 = new ReadDataFromServer(socket);
         thread1.start();
         
         frame.setUndecorated(false);
@@ -181,11 +181,13 @@ public class NewGame implements ActionListener {
 
             public void mousePressed(MouseEvent e) {
                 try{
-                    if(playerID == 1 && getChecker(e.getX()-40,e.getY()-40).white==true){
+                    if(playerID == 1 && getChecker(e.getX()-40,e.getY()-40).white==true && whosTurn==false){
                         selectedChecker = getChecker(e.getX()-40,e.getY()-40);
+                        whosTurn = true;
                     }
-                    if(playerID == 2 && getChecker(e.getX()-40,e.getY()-40).white==false){
+                    if(playerID == 2 && getChecker(e.getX()-40,e.getY()-40).white==false && whosTurn==true){
                         selectedChecker = getChecker(e.getX()-40,e.getY()-40);
+                        whosTurn = false;
                     }
                 }catch(NullPointerException ex){
                 }
@@ -202,6 +204,7 @@ public class NewGame implements ActionListener {
                     OutputStream outputStream = socket.getOutputStream();
                     objectOutputStream = new ObjectOutputStream(outputStream);
                     objectOutputStream.writeObject(checkers);
+                    objectOutputStream.writeBoolean(whosTurn);
                     objectOutputStream.flush();
                     frame.repaint();
                 }catch(NullPointerException ex){
@@ -230,12 +233,14 @@ public class NewGame implements ActionListener {
         }
         
         @SuppressWarnings("unchecked")
+        @Override
         public void run(){
             while(true){
                 try{
                     InputStream inputStream = s.getInputStream();
                     ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
                     checkers = (LinkedList<Checker>)objectInputStream.readObject();
+                    whosTurn = objectInputStream.readBoolean();
                 }catch(IOException e){
                     System.out.println("IOException in ReadDataFromServer");
                     break;
@@ -278,7 +283,6 @@ public class NewGame implements ActionListener {
             System.out.println(iAdres);
             socket = new Socket(iAdres, PORT);
             DataInputStream in = new DataInputStream(socket.getInputStream());
-            DataOutputStream out = new DataOutputStream(socket.getOutputStream());
             textArea.append("Connected\n");
             playerID = in.readInt();
         } catch (IOException e) {

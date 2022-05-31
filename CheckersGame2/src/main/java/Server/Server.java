@@ -19,6 +19,7 @@ public class Server {
     private static LinkedList<Object> list;
     private static int playerID = 0;
     private static int maxPlayer = 2;
+    private boolean whosTurn;
     static Socket p1Socket;
     static Socket p2Socket;
     static Socket socket = null;
@@ -43,9 +44,9 @@ public class Server {
                     p1Socket = socket;
                 } else {
                     p2Socket = socket;
-                    Thread thread1 = new ReadWriteDataFromClient(p1Socket,p2Socket);
+                    Thread thread1 = new ReadWriteDataFromClient(p1Socket,p2Socket,whosTurn);
                     thread1.start();
-                    Thread thread2 = new ReadWriteDataFromClient(p2Socket,p1Socket);
+                    Thread thread2 = new ReadWriteDataFromClient(p2Socket,p1Socket,whosTurn);
                     thread2.start();
                 }
                 System.out.println("Player "+playerID+" is connected.");
@@ -71,10 +72,12 @@ public class Server {
         
         Socket s1;
         Socket s2;
-
-        public ReadWriteDataFromClient(Socket s1, Socket s2) {
+        boolean whosTurn;
+        
+        public ReadWriteDataFromClient(Socket s1, Socket s2, boolean whosTurn) {
             this.s1 = s1;
             this.s2 = s2;
+            this.whosTurn = whosTurn;
         }
         
         @Override
@@ -85,10 +88,12 @@ public class Server {
                     InputStream inputStream = s1.getInputStream();
                     ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
                     list = (LinkedList<Object>)objectInputStream.readObject();
-
+                    whosTurn = objectInputStream.readBoolean();
+                    
                     OutputStream outputStream = s2.getOutputStream();
                     ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
                     objectOutputStream.writeObject(list);
+                    objectOutputStream.writeBoolean(whosTurn);
                     objectOutputStream.flush();
                 }catch(IOException e){
                     System.out.println("IOException from ReadWriteDataFromClient1");
