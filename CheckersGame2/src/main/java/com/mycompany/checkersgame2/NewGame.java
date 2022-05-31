@@ -17,14 +17,15 @@ public class NewGame implements ActionListener {
      * 
      */
     static final int PORT = 6623;
-    protected String Address = "10.101.109.132";
+    protected String Address = "192.168.1.186";
     ObjectOutputStream objectOutputStream;
     protected InetAddress iAdres = null;
     protected Socket socket = null; 
     protected ServerSocket serverSocket;
     protected PrintWriter out;
+    protected int playerID;
     private final String bColour = "#a85a32";
-    JFrame frame = new JFrame("Checkers");
+    JFrame frame = new JFrame();
     JTextArea textArea = new JTextArea(10,29);
     JTextField textField = new JTextField(20);
     JButton sendButton = new JButton("Send"); 
@@ -38,7 +39,8 @@ public class NewGame implements ActionListener {
     public static Checker selectedChecker = null;
 
     public NewGame(){
-        
+        this.connect();
+        frame.setTitle("Checkers V1.0 Player: " + playerID + ".");
         int size = 90;
         /**
          * Creating the pawns
@@ -130,7 +132,7 @@ public class NewGame implements ActionListener {
          * Starting the thread which reading data from server.
          * Starting the thread which repainting the frame.
          */
-        this.connect();
+        
         Thread thread1 = new ReadDataFromServer(socket);
         Thread thread = new RefreshBoard(this);
         thread.start();
@@ -267,8 +269,10 @@ public class NewGame implements ActionListener {
         try {
             System.out.println(iAdres);
             socket = new Socket(iAdres, PORT);
+            DataInputStream in = new DataInputStream(socket.getInputStream());
+            DataOutputStream out = new DataOutputStream(socket.getOutputStream());
             textArea.append("Connected\n");
-            System.out.println(socket);
+            playerID = in.readInt();
         } catch (IOException e) {
             textArea.append("Not connected\n");
             e.printStackTrace();

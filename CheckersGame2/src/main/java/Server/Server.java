@@ -35,8 +35,10 @@ public class Server {
             System.out.println("===Server Started===\nWaiting for players...");
             while (playerID<=maxPlayer) {
                 socket = s.accept();
+                DataInputStream in = new DataInputStream(socket.getInputStream());
+                DataOutputStream out = new DataOutputStream(socket.getOutputStream());
                 playerID++;
-                System.out.println("New Payer x" +playerID);
+                out.writeInt(playerID);
                 if(playerID==1){
                     p1Socket = socket;
                 } else {
