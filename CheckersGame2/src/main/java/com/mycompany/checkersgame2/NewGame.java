@@ -17,7 +17,7 @@ public class NewGame implements ActionListener {
      * 
      */
     static final int PORT = 6623;
-    protected String Address = "localhost";
+    protected String Address = "10.101.109.132";
     ObjectOutputStream objectOutputStream;
     protected InetAddress iAdres = null;
     protected Socket socket = null; 
@@ -192,6 +192,7 @@ public class NewGame implements ActionListener {
                     OutputStream outputStream = socket.getOutputStream();
                     objectOutputStream = new ObjectOutputStream(outputStream);
                     objectOutputStream.writeObject(checkers);
+                    objectOutputStream.flush();
                     frame.repaint();
                 }catch(NullPointerException ex){
                 }catch(IOException exc){
@@ -227,8 +228,10 @@ public class NewGame implements ActionListener {
                     checkers = (LinkedList<Checker>)objectInputStream.readObject();
                 }catch(IOException e){
                     System.out.println("IOException in ReadDataFromServer");
+                    break;
                 }catch(ClassNotFoundException ex){
                     System.out.println("ClassNotFoundException in ReadDataFromServer");
+                    break;
                 }
             }
         }

@@ -48,13 +48,12 @@ public class Server {
                 }
                 System.out.println("Player "+playerID+" is connected.");
             }
+            s.close();
         } catch (IOException e) {
             System.out.println("IOException in acceptConnections");
         }finally {
             try {
                 socket.close();
-                p1Socket.close();
-                p2Socket.close();
                 s.close();
             } catch (IOException e) {
                 System.out.println("IOException in finnaly-acceptConnections");
@@ -80,10 +79,13 @@ public class Server {
                     OutputStream outputStream = p2Socket.getOutputStream();
                     ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
                     objectOutputStream.writeObject(list);
+                    objectOutputStream.flush();
                 }catch(IOException e){
                     System.out.println("IOException from ReadWriteDataFromClient1");
+                    break;
                 }catch(ClassNotFoundException ex){
                     System.out.println("ClassNotFoundException from ReadWriteDataFromClient1");
+                    break;
                 }
             }
         }   
@@ -107,10 +109,13 @@ public class Server {
                     OutputStream outputStream = p1Socket.getOutputStream();
                     ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
                     objectOutputStream.writeObject(list);
+                    objectOutputStream.flush();
                 }catch(IOException e){
                     System.out.println("IOException from ReadWriteDataFromClient2");
+                    break;
                 }catch(ClassNotFoundException ex){
                     System.out.println("ClassNotFoundException from ReadWriteDataFromClient2");
+                    break;
                 }
             }
         }   
