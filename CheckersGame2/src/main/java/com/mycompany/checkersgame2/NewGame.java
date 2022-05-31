@@ -23,7 +23,7 @@ public class NewGame implements ActionListener {
     protected Socket socket = null; 
     protected ServerSocket serverSocket;
     protected PrintWriter out;
-    protected int playerID;
+    protected static int playerID;
     private final String bColour = "#a85a32";
     JFrame frame = new JFrame();
     JTextArea textArea = new JTextArea(10,29);
@@ -152,12 +152,11 @@ public class NewGame implements ActionListener {
             @Override
             public void mouseDragged(MouseEvent e) {
                 try{
-                //selectedChecker.Move(e.getX(), e.getY());
                     if(selectedChecker != null){
                         selectedChecker.x = e.getX()-75;
                         selectedChecker.y = e.getY()-89;
                         frame.repaint();
-                     }
+                    }
                 }catch(NullPointerException ex){
                 }
             }
@@ -181,7 +180,15 @@ public class NewGame implements ActionListener {
             @Override
 
             public void mousePressed(MouseEvent e) {
-                selectedChecker = getChecker(e.getX()-40,e.getY()-40);
+                try{
+                    if(playerID == 1 && getChecker(e.getX()-40,e.getY()-40).white==true){
+                        selectedChecker = getChecker(e.getX()-40,e.getY()-40);
+                    }
+                    if(playerID == 2 && getChecker(e.getX()-40,e.getY()-40).white==false){
+                        selectedChecker = getChecker(e.getX()-40,e.getY()-40);
+                    }
+                }catch(NullPointerException ex){
+                }
             }
             /**
              * Moving the pawn when mouse released.
@@ -191,6 +198,7 @@ public class NewGame implements ActionListener {
             public void mouseReleased(MouseEvent e) {
                 try{
                     selectedChecker.Move(e.getX()/100, e.getY()/100);
+                    selectedChecker = null;
                     OutputStream outputStream = socket.getOutputStream();
                     objectOutputStream = new ObjectOutputStream(outputStream);
                     objectOutputStream.writeObject(checkers);
