@@ -1,38 +1,11 @@
 package com.mycompany.checkersgame2;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketAddress;
-import java.util.ArrayList;
+import java.awt.*;
+import java.awt.event.*;
+import java.io.*;
+import java.net.*;
 import java.util.LinkedList;
-import java.util.List;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
+import javax.swing.*;
 import static javax.swing.WindowConstants.HIDE_ON_CLOSE;
 /**
  *
@@ -41,25 +14,22 @@ import static javax.swing.WindowConstants.HIDE_ON_CLOSE;
 public class NewGame implements ActionListener {
     /**
      * Variables needed to connect to the server and to set interface.
+     * 
      */
-    static final int portSerwera = 6623;//192.168.1.186
-    protected String adresSerwera = "192.168.1.186";//88.105.17.179
-
+    static final int PORT = 6623;
+    protected String Address = "localhost";
+    ObjectOutputStream objectOutputStream;
     protected InetAddress iAdres = null;
     protected Socket socket = null; 
     protected ServerSocket serverSocket;
-    private DataOutputStream dos;
-    private DataInputStream dis;
     protected PrintWriter out;
-
     private final String bColour = "#a85a32";
-    
     JFrame frame = new JFrame("Checkers");
     JTextArea textArea = new JTextArea(10,29);
     JTextField textField = new JTextField(20);
-    JButton sendButton = new JButton("Send");
-    JScrollPane sp = new JScrollPane(textArea); 
+    JButton sendButton = new JButton("Send"); 
     JPanel board=new JPanel();
+    private JScrollPane scroll;
     
     /**
      * Linked list of our pawns.
@@ -140,6 +110,9 @@ public class NewGame implements ActionListener {
         JPanel eastPanel = new JPanel(new BorderLayout());
         textArea.setBorder(BorderFactory.createLineBorder(Color.BLACK));
         textArea.setEditable(false);
+        textArea.setEditable(false);
+        textArea.setLineWrap(true);
+        scroll = new JScrollPane(textArea);
         
         checkersBoard.add(eastPanel, BorderLayout.EAST);
         eastPanel.setBackground(Color.decode(bColour));
@@ -153,9 +126,15 @@ public class NewGame implements ActionListener {
         sendButton.addActionListener(this);
         textField.addActionListener(this);
         /**
-         * connecting with the server
+         * Connecting with the server.
+         * Starting the thread which reading data from server.
+         * Starting the thread which repainting the frame.
          */
         this.connect();
+        Thread thread1 = new ReadDataFromServer(socket);
+        Thread thread = new RefreshBoard(this);
+        thread.start();
+        thread1.start();
         
         frame.setUndecorated(false);
         frame.setSize(1200,900);
@@ -164,7 +143,7 @@ public class NewGame implements ActionListener {
         frame.setVisible(true);
         frame.setDefaultCloseOperation(HIDE_ON_CLOSE);
         /**
-         * Mause motion listener, mouseDragged function has been used to move
+         * Mouse motion listener, mouseDragged function has been used to move
          * checkers.
          */
         frame.addMouseMotionListener(new MouseMotionListener() {
@@ -186,6 +165,11 @@ public class NewGame implements ActionListener {
         });
         /**
          * Mouse listener
+         * mousePressed - function is responsible for getting the position x,y
+         * of the pawn.
+         * mouseReleased - function is responsible for setting the pawn on the right
+         * position. Then this method sending the data(our list of pawns) to server.
+         * At the end it is repainting our frame.
          */
         frame.addMouseListener(new MouseListener() {
             @Override
@@ -201,11 +185,16 @@ public class NewGame implements ActionListener {
              * Moving the pawn when mouse released.
              */
             @Override
+            @SuppressWarnings("unchecked")
             public void mouseReleased(MouseEvent e) {
                 try{
                     selectedChecker.Move(e.getX()/100, e.getY()/100);
+                    OutputStream outputStream = socket.getOutputStream();
+                    objectOutputStream = new ObjectOutputStream(outputStream);
+                    objectOutputStream.writeObject(checkers);
                     frame.repaint();
                 }catch(NullPointerException ex){
+                }catch(IOException exc){
                 }
             }
 
@@ -219,29 +208,68 @@ public class NewGame implements ActionListener {
         });
     }
     /**
+     * Thread class which reading data(our list of pawns) from server.
+     */
+    private class ReadDataFromServer extends Thread {
+        
+        Socket s;
+
+        public ReadDataFromServer(Socket s) {
+            this.s = s;
+        }
+        
+        @SuppressWarnings("unchecked")
+        public void run(){
+            while(true){
+                try{
+                    InputStream inputStream = s.getInputStream();
+                    ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
+                    checkers = (LinkedList<Checker>)objectInputStream.readObject();
+                }catch(IOException e){
+                    System.out.println("IOException in ReadDataFromServer");
+                }catch(ClassNotFoundException ex){
+                    System.out.println("ClassNotFoundException in ReadDataFromServer");
+                }
+            }
+        }
+    }
+    /**
+     * Thread that is needed for repainting the checkers board.
+     */
+    private class RefreshBoard extends Thread {
+        
+        NewGame dialog;
+
+        public RefreshBoard(NewGame dialog) {
+            this.dialog = dialog;
+        }
+        
+        public void run(){
+            while(true){
+                dialog.frame.repaint();
+            }
+        }
+    }
+    
+    /**
      * Connecting with the server.
      */
     void connect() {
         try {
-            iAdres = InetAddress.getByName(adresSerwera);
+            iAdres = InetAddress.getByName(Address);
             textArea.append("Connecting to the address = " + iAdres + "\n");
         } catch (Exception e) { 
             System.exit(0); 
         }
         try {
             System.out.println(iAdres);
-            socket = new Socket(iAdres, portSerwera);
+            socket = new Socket(iAdres, PORT);
             textArea.append("Connected\n");
             System.out.println(socket);
         } catch (IOException e) {
             textArea.append("Not connected\n");
             e.printStackTrace();
         }
-        /**
-         * Starting the NewGame listening thread
-         */
-        Thread thread = new ClientThreadChat(this);
-        thread.start();
         try {
             out = new PrintWriter(new BufferedWriter(
                                   new OutputStreamWriter(
@@ -258,7 +286,7 @@ public class NewGame implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent g) {
         out.println(textField.getText());
-        if (textField.getText().equals("END")){
+        if (textField.getText().equals("end")){
             try{
                 out.close();
                 socket.close();

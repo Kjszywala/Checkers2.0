@@ -3,145 +3,124 @@ package Server;
 import java.io.*;
 import java.net.*;
 import java.util.*;
-
-//klasa w której będziemy pamiętali informacje o
-//kolejnym kliencie łączącym się z serwerem
-//w większej aplikacji klasa ta powinna być obszerniejsza
-
-class OpisKlienta {
-    PrintWriter wyjscie;
-    String nazwa;
-    
-    OpisKlienta(String nazwa, PrintWriter wyjscie) {
-        this.nazwa = nazwa;
-        this.wyjscie = wyjscie;
-    }
-
-    //przesyłanie informacji do innego klienta
-    synchronized void napiszDoMnie(String nadawca, String wiadomosc) {
-        wyjscie.println(nadawca + ": " + wiadomosc);
-    }
-}
-
-//klasa będąca wątkiem obsługującym konkretnego klienta
-class ObslugaKlienta extends Thread {
-    private Socket socket;
-    private BufferedReader wejscie;
-    private PrintWriter wyjscie;	
-    private OpisKlienta opis;
-
-    //kontener w którym zapamiętam informacje
-    // o wszystkich aktywnych klientach
-    //jako że jest static każdy klient ma do niego dostęp
-    
-    static HashSet<OpisKlienta> klienci = new HashSet<OpisKlienta>();    
-
-    //konstruktor - przygotowanie odpowiednich strumieni
-    public ObslugaKlienta(Socket socket) throws IOException {
-        this.socket = socket;
-        wejscie = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        wyjscie = new PrintWriter(
-                    new BufferedWriter(
-                        new OutputStreamWriter(socket.getOutputStream())),
-                            true); //z automatycznym opróżnianiem bufora
-    }
-    
-    public void powiedzWszystkim(String nazwa, String wiadomosc){
-//            Iterator iterator = klienci.iterator();
-//            OpisKlienta nastepny;
-//            while (iterator.hasNext()) {
-//                nastepny = (OpisKlienta)iterator.next();
-//                nastepny.napiszDoMnie(nazwa, wiadomosc);
-//            }
-
-          // albo po prostu tak
-            for (OpisKlienta klient : klienci)
-                klient.napiszDoMnie(nazwa, wiadomosc);
-    }
-
-    void wypiszKlientow() {
-        Iterator iterator = klienci.iterator();
-        OpisKlienta nastepny;
-        wyjscie.println("People logged: " + klienci.size());
-
-        while (iterator.hasNext()) {
-            nastepny = (OpisKlienta) iterator.next();
-            wyjscie.println(nastepny.nazwa);
-        }
-        wyjscie.println();
-    }
-
-    public void run() {
-        //UWAGA: w tej funkcji powinno znaleźć się mnóstwo
-        //oddzielnych bloków try-catch zapewniających poprawność
-        //działania serwera. Obsługujących takie sytuacje jak np.
-        //nieoczekiwane przerwanie połączenia z klientem.
-        //Uproszczenie zastosowano z powodu chęci przedstawienia
-        //zasad działania serwera w sposób najprostszy.
-        String nazwaKlienta=null;
-        try {
-            //pytam o nazwę
-            wyjscie.println("Write your name: ");
-            wyjscie.println("Write your name: ");
-            nazwaKlienta = wejscie.readLine();
-
-            System.out.println("Zalogował się: " + nazwaKlienta);
-            powiedzWszystkim("", "Logged in: " + nazwaKlienta);
-
-            //zapisuję tego klienta do kontenera i wypisuję jego zawartość
-            opis = new OpisKlienta(nazwaKlienta, wyjscie);
-            klienci.add(opis);
-            wypiszKlientow();
-
-            //czytam info od klienta i przesyłam innym
-            while (true) {
-                String info = wejscie.readLine();
-                if (info.equals("end")) {
-                    System.out.println("Logged out: " + nazwaKlienta);
-                    powiedzWszystkim("", "Logged out: " + nazwaKlienta);
-                    klienci.remove(opis);
-                    wejscie.close();
-                    wyjscie.close();
-                    socket.close();
-                    break;
-                }
-               	powiedzWszystkim(nazwaKlienta, info);
-                powiedzWszystkim(nazwaKlienta, info);
-            }
-        } catch (Exception e) { 
-        }
-//        try{
-//            InputStream inputStream = socket.getInputStream();
-//            ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
-//            LinkedList<Object> list =(LinkedList<Object>)objectInputStream.readObject();
-//        }catch(IOException e){
-//            
-//        }catch(ClassNotFoundException ex){
-//            
-//        }
-    } 
-}
-
+/**
+ * Server class which handle connection between players.
+ * @author kamil.szywala
+ */
 public class Server {
+    /**
+     * Variables needed to start the server.
+     * LinkedList of objects which we going to read and send from and to both players.
+     * playerID information which player you are.
+     * maxPlayer is the integer of how many connections we can handle.
+     * p1Socket,p2Socket players sockets.
+     */
     static final int PORT = 6623;
-    public static void main(String[] args) {
+    private static LinkedList<Object> list;
+    private static int playerID = 0;
+    private static int maxPlayer = 2;
+    static Socket p1Socket;
+    static Socket p2Socket;
+    static Socket socket = null;
+    /**
+     * Function acceptConnection() - accepting connection of both players,
+     * increasing playerID number if there is connection. Starting threads when
+     * there is two players ready to play. Finally closing the connections.
+     */
+    @SuppressWarnings("unchecked")
+    public void acceptConnection(){
         ServerSocket s = null;
-        Socket socket = null;
         try {
             s = new ServerSocket(PORT);
             System.out.println("Server Started");
-            while (true) {
+            while (playerID<=maxPlayer) {
                 socket = s.accept();
                 System.out.println("New Client");
-                
-                new ObslugaKlienta(socket).start();                
+                playerID++;
+                if(playerID==1){
+                    p1Socket = socket;
+                } else {
+                    p2Socket = socket;
+                    Thread thread1 = new ReadWriteDataFromClient1();
+                    thread1.start();
+                    Thread thread2 = new ReadWriteDataFromClient2();
+                    thread2.start();
+                }
+                System.out.println("Player "+playerID+" is connected.");
             }
         } catch (IOException e) {
-        } finally {
+            System.out.println("IOException in acceptConnections");
+        }finally {
             try {
                 socket.close();
+                p1Socket.close();
+                p2Socket.close();
                 s.close();
-            } catch (IOException e) {}
+            } catch (IOException e) {
+                System.out.println("IOException in finnaly-acceptConnections");
+            }
         }
+    }
+    /**
+     * Thread class which reading and sending data from first player to second player.
+     * Firstly it is reading list of pawns from player one and then sending it to
+     * player two.
+     */
+    private class ReadWriteDataFromClient1 extends Thread {
+        
+        @Override
+        @SuppressWarnings("unchecked")
+        public void run() {
+            while(true){
+                try{
+                    InputStream inputStream = p1Socket.getInputStream();
+                    ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
+                    list = (LinkedList<Object>)objectInputStream.readObject();
+
+                    OutputStream outputStream = p2Socket.getOutputStream();
+                    ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
+                    objectOutputStream.writeObject(list);
+                }catch(IOException e){
+                    System.out.println("IOException from ReadWriteDataFromClient1");
+                }catch(ClassNotFoundException ex){
+                    System.out.println("ClassNotFoundException from ReadWriteDataFromClient1");
+                }
+            }
+        }   
+    }
+    /**
+     * Thread class which reading and sending data from second player to first player.
+     * Firstly it is reading list of pawns from player two and then sending it to
+     * player one.
+     */
+    private class ReadWriteDataFromClient2 extends Thread {
+        
+        @Override
+        @SuppressWarnings("unchecked")
+        public void run() {
+            while(true){
+                try{
+                    InputStream inputStream = p2Socket.getInputStream();
+                    ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
+                    list = (LinkedList<Object>)objectInputStream.readObject();
+
+                    OutputStream outputStream = p1Socket.getOutputStream();
+                    ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
+                    objectOutputStream.writeObject(list);
+                }catch(IOException e){
+                    System.out.println("IOException from ReadWriteDataFromClient2");
+                }catch(ClassNotFoundException ex){
+                    System.out.println("ClassNotFoundException from ReadWriteDataFromClient2");
+                }
+            }
+        }   
+    }
+    /**
+     * Main function - starting the server.
+     * @param args 
+     */
+     public static void main(String[] args) {
+        Server s = new Server();
+        s.acceptConnection();
     }
 }

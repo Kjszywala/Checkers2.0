@@ -1,5 +1,6 @@
 package com.mycompany.checkersgame2;
 
+import java.io.Serializable;
 import java.util.ConcurrentModificationException;
 import java.util.LinkedList;
 import javax.swing.JComponent;
@@ -7,11 +8,18 @@ import javax.swing.JComponent;
 /**
 
 * @author kamil.szywala
-
+* Class checker which is object of our pawn. Implementing Serializable
+* interface from the reason to be able to send it through socket to the server.
 */
-public class Checker {
+public class Checker implements Serializable {
     /**
      * Variables
+     * positionX,positionY our position x and y of pawn when mouse is released.
+     * x,y position of the checker when the mouse is dragged.
+     * checkers - linked list of our pawns.
+     * white - is pawn white?
+     * isQueen - is pawn Queen?
+     * opponentMove - is that opponent move?
      */
     protected int positionX;
     protected int positionY;
