@@ -41,9 +41,9 @@ public class Server {
                     p1Socket = socket;
                 } else {
                     p2Socket = socket;
-                    Thread thread1 = new ReadWriteDataFromClient1();
+                    Thread thread1 = new ReadWriteDataFromClient(p1Socket,p2Socket);
                     thread1.start();
-                    Thread thread2 = new ReadWriteDataFromClient2();
+                    Thread thread2 = new ReadWriteDataFromClient(p2Socket,p1Socket);
                     thread2.start();
                 }
                 System.out.println("Player "+playerID+" is connected.");
@@ -65,18 +65,26 @@ public class Server {
      * Firstly it is reading list of pawns from player one and then sending it to
      * player two.
      */
-    private class ReadWriteDataFromClient1 extends Thread {
+    private class ReadWriteDataFromClient extends Thread {
+        
+        Socket s1;
+        Socket s2;
+
+        public ReadWriteDataFromClient(Socket s1, Socket s2) {
+            this.s1 = s1;
+            this.s2 = s2;
+        }
         
         @Override
         @SuppressWarnings("unchecked")
         public void run() {
             while(true){
                 try{
-                    InputStream inputStream = p1Socket.getInputStream();
+                    InputStream inputStream = s1.getInputStream();
                     ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
                     list = (LinkedList<Object>)objectInputStream.readObject();
 
-                    OutputStream outputStream = p2Socket.getOutputStream();
+                    OutputStream outputStream = s2.getOutputStream();
                     ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
                     objectOutputStream.writeObject(list);
                     objectOutputStream.flush();
@@ -85,36 +93,6 @@ public class Server {
                     break;
                 }catch(ClassNotFoundException ex){
                     System.out.println("ClassNotFoundException from ReadWriteDataFromClient1");
-                    break;
-                }
-            }
-        }   
-    }
-    /**
-     * Thread class which reading and sending data from second player to first player.
-     * Firstly it is reading list of pawns from player two and then sending it to
-     * player one.
-     */
-    private class ReadWriteDataFromClient2 extends Thread {
-        
-        @Override
-        @SuppressWarnings("unchecked")
-        public void run() {
-            while(true){
-                try{
-                    InputStream inputStream = p2Socket.getInputStream();
-                    ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
-                    list = (LinkedList<Object>)objectInputStream.readObject();
-
-                    OutputStream outputStream = p1Socket.getOutputStream();
-                    ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
-                    objectOutputStream.writeObject(list);
-                    objectOutputStream.flush();
-                }catch(IOException e){
-                    System.out.println("IOException from ReadWriteDataFromClient2");
-                    break;
-                }catch(ClassNotFoundException ex){
-                    System.out.println("ClassNotFoundException from ReadWriteDataFromClient2");
                     break;
                 }
             }
