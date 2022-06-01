@@ -9,9 +9,10 @@ import javax.swing.*;
 import static javax.swing.WindowConstants.HIDE_ON_CLOSE;
 /**
  * Class NewGame responsible for load a new game for two players.
+ * ActionListener and KeyListener added for chat.
  * @author Kamil
  */
-public class NewGame implements ActionListener {
+public class NewGame implements ActionListener, KeyListener {
     /**
      * Variables needed to connect to the server and to set interface.
      * Two ports: one for sending list of objects and secend for chat.
@@ -24,7 +25,7 @@ public class NewGame implements ActionListener {
      */
     static final int PORT = 6623;
     static final int PORT_CHAT = 6624;
-    protected String Address = "192.168.1.186";
+    protected String Address = "localhost";
     ObjectOutputStream objectOutputStream;
     protected InetAddress iAdres = null;
     protected Socket socket = null; 
@@ -141,6 +142,7 @@ public class NewGame implements ActionListener {
         eastBottomPanel.setBackground(Color.decode(bColour));
         sendButton.addActionListener(this);
         textField.addActionListener(this);
+        textField.addKeyListener(this);
         /**
          * Starting the thread which reading data from server.
          * Starting the thread which repainting the frame.
@@ -241,6 +243,22 @@ public class NewGame implements ActionListener {
             }
         });
     }
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        if(e.getKeyCode() == e.VK_ENTER){
+            sendMessage();
+        }
+        
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+    }
     /**
      * Thread class which reading data(our list of pawns) from server.
      */
@@ -303,8 +321,8 @@ public class NewGame implements ActionListener {
             socketChat = new Socket(iAdres,PORT_CHAT);
             DataInputStream input = new DataInputStream(socket.getInputStream());
             textArea.append("Connected\n");
-            textArea.append("You are player: "+playerID);
             playerID = input.readInt();
+            textArea.append("You are player: "+playerID);
         } catch (IOException e) {
             textArea.append("Not connected\n");
         }
@@ -352,6 +370,7 @@ public class NewGame implements ActionListener {
      */
     @Override
     public void actionPerformed(ActionEvent g) {
+        
         switch(g.getActionCommand()){
             case "Send" -> sendMessage();
         }

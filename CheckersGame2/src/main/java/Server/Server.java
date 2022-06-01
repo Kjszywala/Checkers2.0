@@ -3,6 +3,8 @@ package Server;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 /**
  * Server class which handle connection between players.
  * @author kamil.szywala
