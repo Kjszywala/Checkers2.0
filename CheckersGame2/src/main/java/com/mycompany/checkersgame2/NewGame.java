@@ -332,6 +332,7 @@ public class NewGame implements ActionListener {
         for(Checker c: checkers){
             if(c.positionX==xposition && c.positionY==yposition){
                 return c;
+                
             }
         }
         return null;
