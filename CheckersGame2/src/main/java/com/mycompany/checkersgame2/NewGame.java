@@ -23,6 +23,7 @@ public class NewGame implements ActionListener {
     protected Socket socket = null; 
     protected ServerSocket serverSocket;
     protected PrintWriter out;
+    protected BufferedReader in;
     protected static int playerID;
     protected int positionHistoryY;
     protected boolean whosTurn;
@@ -58,7 +59,7 @@ public class NewGame implements ActionListener {
         Checker wc9 = new Checker(0,5,true,checkers,false);
         Checker wc10 = new Checker(2,5,true,checkers,false);
         Checker wc11 = new Checker(4,5,true,checkers,false);
-        Checker wc12 = new Checker(6,5,true,checkers,true);
+        Checker wc12 = new Checker(6,5,true,checkers,false);
         
         Checker bc1 = new Checker(1,0,false,checkers,false);
         Checker bc2 = new Checker(3,0,false,checkers,false);
@@ -285,40 +286,59 @@ public class NewGame implements ActionListener {
             System.exit(0); 
         }
         try {
-            System.out.println(iAdres);
             socket = new Socket(iAdres, PORT);
             DataInputStream in = new DataInputStream(socket.getInputStream());
             textArea.append("Connected\n");
             playerID = in.readInt();
+//            Thread thread = new ReadStringFromServer();
+//            thread.start();
         } catch (IOException e) {
             textArea.append("Not connected\n");
             e.printStackTrace();
         }
-        try {
-            out = new PrintWriter(new BufferedWriter(
-                                  new OutputStreamWriter(
-                                  socket.getOutputStream())), true);
-            System.out.println("Thread started");
-        } catch (Exception e) { 
-            textArea.append("Error: " + e); 
+    }
+    
+    private class ReadStringFromServer extends Thread {
+        
+        String line;
+        
+        @Override
+        public void run(){
+            try{
+                in = new BufferedReader(
+                    new InputStreamReader(socket.getInputStream()));
+                while(true){
+                    line = in.readLine();
+                    textArea.append(line+"\n");
+                }
+            }catch(IOException e){
+                System.out.println("IOexception in ReadStringFromServer run()");
+            }
         }
     }
+    
+    private void sendMessage(){
+        String line = textField.getText();
+        textArea.append(line);
+//        try{
+//        out = new PrintWriter(new BufferedWriter(
+//                    new OutputStreamWriter(
+//                        socket.getOutputStream())),true);
+//        out.println(line);
+//        }catch(IOException e){
+//            System.out.println("IOException in sendMessage()");
+//        }
+    }
+    
     /**
      * Closing connection with the server
      * @param g 
      */
     @Override
     public void actionPerformed(ActionEvent g) {
-        out.println(textField.getText());
-        if (textField.getText().equals("end")){
-            try{
-                out.close();
-                socket.close();
-            }catch(Exception e){
-            }
-                System.exit(0);
-            }
-        textField.setText("");
+        switch(g.getActionCommand()){
+            case "Send" -> sendMessage();
+        }
     }
     /**
      * Getting the checker position x and y.

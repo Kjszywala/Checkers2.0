@@ -2,6 +2,7 @@ package Server;
 
 import java.io.*;
 import java.net.*;
+import java.nio.channels.SocketChannel;
 import java.util.*;
 /**
  * Server class which handle connection between players.
@@ -22,7 +23,10 @@ public class Server {
     private boolean whosTurn;
     static Socket p1Socket;
     static Socket p2Socket;
+    static Socket p3Socket;
+    static Socket p4Socket;
     static Socket socket = null;
+    static SocketChannel socket2 = null;
     /**
      * Function acceptConnection() - accepting connection of both players,
      * increasing playerID number if there is connection. Starting threads when
@@ -31,23 +35,29 @@ public class Server {
     @SuppressWarnings("unchecked")
     public void acceptConnection(){
         ServerSocket s = null;
+        SocketChannel ss = null;
         try {
             s = new ServerSocket(PORT);
             System.out.println("===Server Started===\nWaiting for players...");
             while (playerID<=maxPlayer) {
                 socket = s.accept();
-                DataInputStream in = new DataInputStream(socket.getInputStream());
                 DataOutputStream out = new DataOutputStream(socket.getOutputStream());
                 playerID++;
                 out.writeInt(playerID);
                 if(playerID==1){
                     p1Socket = socket;
+                    p3Socket = socket;
                 } else {
                     p2Socket = socket;
+                    p4Socket = socket;
                     Thread thread1 = new ReadWriteDataFromClient(p1Socket,p2Socket,whosTurn);
                     thread1.start();
                     Thread thread2 = new ReadWriteDataFromClient(p2Socket,p1Socket,whosTurn);
                     thread2.start();
+//                    Thread thread3 = new ReadWriteStringFromTheClient(p3Socket, p4Socket);
+//                    thread3.start();
+//                    Thread thread4 = new ReadWriteStringFromTheClient(p4Socket, p3Socket);
+//                    thread4.start();
                 }
                 System.out.println("Player "+playerID+" is connected.");
             }
@@ -96,14 +106,45 @@ public class Server {
                     objectOutputStream.writeBoolean(whosTurn);
                     objectOutputStream.flush();
                 }catch(IOException e){
-                    System.out.println("IOException from ReadWriteDataFromClient1");
+                    System.out.println("IOException from ReadWriteDataFromClient");
+                    e.printStackTrace();
                     break;
                 }catch(ClassNotFoundException ex){
-                    System.out.println("ClassNotFoundException from ReadWriteDataFromClient1");
+                    System.out.println("ClassNotFoundException from ReadWriteDataFromClient");
                     break;
                 }
             }
         }   
+    }
+    private class ReadWriteStringFromTheClient extends Thread {
+        
+        Socket s1;
+        Socket s2;
+        BufferedReader in;
+        PrintWriter out;
+        String line;
+
+        public ReadWriteStringFromTheClient(Socket s1, Socket s2) {
+            this.s1 = s1;
+            this.s2 = s2;
+        }
+        
+        @Override
+        public void run(){
+            try{
+                in = new BufferedReader(
+                        new InputStreamReader(s1.getInputStream()));
+                out = new PrintWriter(new BufferedWriter(
+                    new OutputStreamWriter(
+                        s2.getOutputStream())),true);
+            while(true){
+                line = in.readLine();
+                out.println(line);
+            }
+            }catch(IOException e){ 
+                System.out.println("IOException in ReadWriteStringFromTheClient run()");
+            }
+        }
     }
     /**
      * Main function - starting the server.
