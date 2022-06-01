@@ -17,10 +17,12 @@ public class NewGame implements ActionListener {
      * 
      */
     static final int PORT = 6623;
-    protected String Address = "10.101.109.132";
+    static final int PORT_CHAT = 6624;
+    protected String Address = "192.168.1.186";
     ObjectOutputStream objectOutputStream;
     protected InetAddress iAdres = null;
     protected Socket socket = null; 
+    protected Socket socketChat = null;
     protected ServerSocket serverSocket;
     protected PrintWriter out;
     protected BufferedReader in;
@@ -139,6 +141,8 @@ public class NewGame implements ActionListener {
         thread.start();
         Thread thread1 = new ReadDataFromServer(socket);
         thread1.start();
+        Thread thread2 = new ReadStringFromServer();
+        thread2.start();
         
         frame.setUndecorated(false);
         frame.setSize(1200,900);
@@ -268,6 +272,7 @@ public class NewGame implements ActionListener {
             this.dialog = dialog;
         }
         
+        @Override
         public void run(){
             while(true){
                 dialog.frame.repaint();
@@ -287,11 +292,10 @@ public class NewGame implements ActionListener {
         }
         try {
             socket = new Socket(iAdres, PORT);
-            DataInputStream in = new DataInputStream(socket.getInputStream());
+            socketChat = new Socket(iAdres,PORT_CHAT);
+            DataInputStream input = new DataInputStream(socket.getInputStream());
             textArea.append("Connected\n");
-            playerID = in.readInt();
-//            Thread thread = new ReadStringFromServer();
-//            thread.start();
+            playerID = input.readInt();
         } catch (IOException e) {
             textArea.append("Not connected\n");
             e.printStackTrace();
@@ -306,7 +310,7 @@ public class NewGame implements ActionListener {
         public void run(){
             try{
                 in = new BufferedReader(
-                    new InputStreamReader(socket.getInputStream()));
+                    new InputStreamReader(socketChat.getInputStream()));
                 while(true){
                     line = in.readLine();
                     textArea.append(line+"\n");
@@ -320,16 +324,16 @@ public class NewGame implements ActionListener {
     private void sendMessage(){
         String line = textField.getText();
         textArea.append(line);
-//        try{
-//        out = new PrintWriter(new BufferedWriter(
-//                    new OutputStreamWriter(
-//                        socket.getOutputStream())),true);
-//        out.println(line);
-//        }catch(IOException e){
-//            System.out.println("IOException in sendMessage()");
-//        }
+        try{
+            out = new PrintWriter(new BufferedWriter(
+                    new OutputStreamWriter(
+                        socketChat.getOutputStream())),true);
+            out.println(line+"\n");
+            textField.setText("");
+        }catch(IOException e){
+            System.out.println("IOException in sendMessage()");
+        }
     }
-    
     /**
      * Closing connection with the server
      * @param g 
