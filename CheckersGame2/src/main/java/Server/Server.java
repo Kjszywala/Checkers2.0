@@ -14,6 +14,9 @@ public class Server {
      * playerID information which player you are.
      * maxPlayer is the integer of how many connections we can handle.
      * p1Socket,p2Socket players sockets.
+     * p1SocketChat,p2SocketChat players chat sockets.
+     * socket - needed for pawns.
+     * socket2 - needed for chat.
      */
     static final int PORT = 6623;
     static final int PORT_CHAT = 6624;
@@ -79,8 +82,8 @@ public class Server {
         }
     }
     /**
-     * Thread class which reading and sending data from first player to second player.
-     * Firstly it is reading list of pawns from player one and then sending it to
+     * Thread class which reading and sending objects between players.
+     * Firstly it's reading list of pawns from player one and sending it to
      * player two.
      */
     private class ReadWriteDataFromClient extends Thread {
@@ -126,6 +129,10 @@ public class Server {
             }
         }   
     }
+    /**
+     * Class thread responsible for reading and sending strings to the
+     * clients.
+     */
     private class ReadWriteStringFromTheClient extends Thread {
         
         Socket s1;

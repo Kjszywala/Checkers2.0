@@ -8,13 +8,19 @@ import java.util.LinkedList;
 import javax.swing.*;
 import static javax.swing.WindowConstants.HIDE_ON_CLOSE;
 /**
- *
+ * Class NewGame responsible for load a new game for two players.
  * @author Kamil
  */
 public class NewGame implements ActionListener {
     /**
      * Variables needed to connect to the server and to set interface.
-     * 
+     * Two ports: one for sending list of objects and secend for chat.
+     * Address of the server.
+     * ObjectOutpuStream for sending the list of objects.
+     * Two sockets - list and chat.
+     * out and in to send and read the strings to chat.
+     * playerID to know which player you are.
+     * positionHistoryY needed to establish who's turn is it.
      */
     static final int PORT = 6623;
     static final int PORT_CHAT = 6624;
@@ -44,6 +50,9 @@ public class NewGame implements ActionListener {
     public static Checker selectedChecker = null;
 
     public NewGame(){
+        /**
+         * Connecting with the server.
+         */
         this.connect();
         frame.setTitle("Checkers V1.0 Player: " + playerID + ".");
         int size = 90;
@@ -133,7 +142,6 @@ public class NewGame implements ActionListener {
         sendButton.addActionListener(this);
         textField.addActionListener(this);
         /**
-         * Connecting with the server.
          * Starting the thread which reading data from server.
          * Starting the thread which repainting the frame.
          */
@@ -173,9 +181,9 @@ public class NewGame implements ActionListener {
         /**
          * Mouse listener
          * mousePressed - function is responsible for getting the position x,y
-         * of the pawn.
+         * of the pawn. Depends from whosTurn, deciding which player should move.
          * mouseReleased - function is responsible for setting the pawn on the right
-         * position. Then this method sending the data(our list of pawns) to server.
+         * position. Then method sending the data(our list of pawns) to server.
          * At the end it is repainting our frame.
          */
         frame.addMouseListener(new MouseListener() {
@@ -199,7 +207,9 @@ public class NewGame implements ActionListener {
                 }
             }
             /**
-             * Moving the pawn when mouse released.
+             * Moving the pawn when mouse released. Setting whosTurn to !whosTurn
+             * so the other player can make a move. Sending our list, whosTurn to
+             * the server.
              */
             @Override
             @SuppressWarnings("unchecked")
@@ -279,9 +289,8 @@ public class NewGame implements ActionListener {
             }
         }
     }
-    
     /**
-     * Connecting with the server.
+     * Connecting with the server. Two sockets needed for pawns and chat.
      */
     void connect() {
         try {
@@ -294,13 +303,15 @@ public class NewGame implements ActionListener {
             socketChat = new Socket(iAdres,PORT_CHAT);
             DataInputStream input = new DataInputStream(socket.getInputStream());
             textArea.append("Connected\n");
+            textArea.append("You are player: "+playerID);
             playerID = input.readInt();
         } catch (IOException e) {
             textArea.append("Not connected\n");
-            e.printStackTrace();
         }
     }
-    
+    /**
+     * Reading output from server and appending it to chat.
+     */
     private class ReadStringFromServer extends Thread {
         
         String line;
@@ -319,7 +330,9 @@ public class NewGame implements ActionListener {
             }
         }
     }
-    
+    /**
+     * When button 'Send' pressed, sending the output from textField to server.
+     */
     private void sendMessage(){
         String line = textField.getText();
         textArea.append("\nPlayer "+playerID+": "+line);
@@ -327,7 +340,6 @@ public class NewGame implements ActionListener {
             out = new PrintWriter(new BufferedWriter(
                     new OutputStreamWriter(
                         socketChat.getOutputStream())),true);
-            
             out.println("Player "+playerID+": "+line);
             textField.setText("");
         }catch(IOException e){
@@ -335,7 +347,7 @@ public class NewGame implements ActionListener {
         }
     }
     /**
-     * Closing connection with the server
+     * Sending textField output to server.
      * @param g 
      */
     @Override
@@ -356,7 +368,6 @@ public class NewGame implements ActionListener {
         for(Checker c: checkers){
             if(c.positionX==xposition && c.positionY==yposition){
                 return c;
-                
             }
         }
         return null;
