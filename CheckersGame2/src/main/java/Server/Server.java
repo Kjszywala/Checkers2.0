@@ -64,14 +64,17 @@ public class Server {
                 System.out.println("Player "+playerID+" is connected.");
             }
             s.close();
+            ss.close();
         } catch (IOException e) {
             System.out.println("IOException in acceptConnections");
-        }finally {
             try {
-                socket.close();
-                s.close();
-            } catch (IOException e) {
-                System.out.println("IOException in finnaly-acceptConnections");
+              socket.close();
+              p1Socket.close();
+              p2Socket.close();
+              p2SocketChat.close();
+              p1SocketChat.close();
+              } catch (IOException ex) {
+              System.out.println("IOException in IOException IOException -acceptConnections");
             }
         }
     }
@@ -110,6 +113,11 @@ public class Server {
                 }catch(IOException e){
                     System.out.println("IOException from ReadWriteDataFromClient");
                     e.printStackTrace();
+                    try{
+                        s1.close();
+                        s2.close();
+                    }catch(IOException exc){
+                    }
                     break;
                 }catch(ClassNotFoundException ex){
                     System.out.println("ClassNotFoundException from ReadWriteDataFromClient");
@@ -146,6 +154,11 @@ public class Server {
             }catch(IOException e){ 
                 System.out.println("IOException in ReadWriteStringFromTheClient run()");
                 e.printStackTrace();
+                try{
+                    s1.close();
+                    s2.close();
+                }catch(IOException exc){
+                }
             }
         }
     }

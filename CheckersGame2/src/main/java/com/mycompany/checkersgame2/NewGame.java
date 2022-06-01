@@ -286,7 +286,6 @@ public class NewGame implements ActionListener {
     void connect() {
         try {
             iAdres = InetAddress.getByName(Address);
-            textArea.append("Connecting to the address = " + iAdres + "\n");
         } catch (Exception e) { 
             System.exit(0); 
         }
@@ -313,7 +312,7 @@ public class NewGame implements ActionListener {
                     new InputStreamReader(socketChat.getInputStream()));
                 while(true){
                     line = in.readLine();
-                    textArea.append(line+"\n");
+                    textArea.append("\n"+line);
                 }
             }catch(IOException e){
                 System.out.println("IOexception in ReadStringFromServer run()");
@@ -323,12 +322,13 @@ public class NewGame implements ActionListener {
     
     private void sendMessage(){
         String line = textField.getText();
-        textArea.append(line);
+        textArea.append("\nPlayer "+playerID+": "+line);
         try{
             out = new PrintWriter(new BufferedWriter(
                     new OutputStreamWriter(
                         socketChat.getOutputStream())),true);
-            out.println(line+"\n");
+            
+            out.println("Player "+playerID+": "+line);
             textField.setText("");
         }catch(IOException e){
             System.out.println("IOException in sendMessage()");
