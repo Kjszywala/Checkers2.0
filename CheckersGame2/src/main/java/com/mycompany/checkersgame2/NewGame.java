@@ -17,13 +17,14 @@ public class NewGame implements ActionListener {
      * 
      */
     static final int PORT = 6623;
-    protected String Address = "192.168.1.186";
+    protected String Address = "10.101.109.132";
     ObjectOutputStream objectOutputStream;
     protected InetAddress iAdres = null;
     protected Socket socket = null; 
     protected ServerSocket serverSocket;
     protected PrintWriter out;
     protected static int playerID;
+    protected int positionHistoryY;
     protected boolean whosTurn;
     private final String bColour = "#a85a32";
     JFrame frame = new JFrame();
@@ -57,7 +58,7 @@ public class NewGame implements ActionListener {
         Checker wc9 = new Checker(0,5,true,checkers,false);
         Checker wc10 = new Checker(2,5,true,checkers,false);
         Checker wc11 = new Checker(4,5,true,checkers,false);
-        Checker wc12 = new Checker(6,5,true,checkers,false);
+        Checker wc12 = new Checker(6,5,true,checkers,true);
         
         Checker bc1 = new Checker(1,0,false,checkers,false);
         Checker bc2 = new Checker(3,0,false,checkers,false);
@@ -181,13 +182,13 @@ public class NewGame implements ActionListener {
 
             public void mousePressed(MouseEvent e) {
                 try{
+                    positionHistoryY = getChecker(e.getX()-40,e.getY()-40).positionY;
                     if(playerID == 1 && getChecker(e.getX()-40,e.getY()-40).white==true && whosTurn==false){
                         selectedChecker = getChecker(e.getX()-40,e.getY()-40);
-                        whosTurn = true;
                     }
                     if(playerID == 2 && getChecker(e.getX()-40,e.getY()-40).white==false && whosTurn==true){
                         selectedChecker = getChecker(e.getX()-40,e.getY()-40);
-                        whosTurn = false;
+                        
                     }
                 }catch(NullPointerException ex){
                 }
@@ -200,6 +201,10 @@ public class NewGame implements ActionListener {
             public void mouseReleased(MouseEvent e) {
                 try{
                     selectedChecker.Move(e.getX()/100, e.getY()/100);
+                    if(positionHistoryY != selectedChecker.positionY){
+                        if(whosTurn == false){whosTurn = true;}
+                        else {whosTurn = false;}
+                    }
                     selectedChecker = null;
                     OutputStream outputStream = socket.getOutputStream();
                     objectOutputStream = new ObjectOutputStream(outputStream);
