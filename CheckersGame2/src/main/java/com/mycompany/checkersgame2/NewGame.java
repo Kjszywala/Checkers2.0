@@ -123,7 +123,7 @@ public class NewGame implements ActionListener {
         
         checkersBoard.add(eastPanel, BorderLayout.EAST);
         eastPanel.setBackground(Color.decode(bColour));
-        eastPanel.add(textArea, BorderLayout.CENTER);
+        eastPanel.add(scroll, BorderLayout.CENTER);
         
         JPanel eastBottomPanel = new JPanel(new FlowLayout());
         eastPanel.add(eastBottomPanel,BorderLayout.SOUTH);
