@@ -26,7 +26,7 @@ public class NewGame implements ActionListener, KeyListener {
      */
     static final int PORT = 6623;
     static final int PORT_CHAT = 6624;
-    protected String Address = "192.168.1.186";
+    protected String Address = "localhost";
     ObjectOutputStream objectOutputStream;
     protected InetAddress iAdres = null;
     protected Socket socket = null; 
