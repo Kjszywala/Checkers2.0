@@ -7,6 +7,7 @@ import java.net.*;
 import java.util.LinkedList;
 import javax.swing.*;
 import static javax.swing.WindowConstants.HIDE_ON_CLOSE;
+import javax.swing.text.DefaultCaret;
 /**
  * Class NewGame responsible for load a new game for two players.
  * ActionListener and KeyListener added for chat.
@@ -25,7 +26,7 @@ public class NewGame implements ActionListener, KeyListener {
      */
     static final int PORT = 6623;
     static final int PORT_CHAT = 6624;
-    protected String Address = "localhost";
+    protected String Address = "192.168.1.186";
     ObjectOutputStream objectOutputStream;
     protected InetAddress iAdres = null;
     protected Socket socket = null; 
@@ -60,31 +61,7 @@ public class NewGame implements ActionListener, KeyListener {
         /**
          * Creating the pawns
          */
-        Checker wc1 = new Checker(0,7,true,checkers,false);
-        Checker wc2 = new Checker(2,7,true,checkers,false);
-        Checker wc3 = new Checker(4,7,true,checkers,false);
-        Checker wc4 = new Checker(6,7,true,checkers,false);
-        Checker wc5 = new Checker(1,6,true,checkers,false);
-        Checker wc6 = new Checker(3,6,true,checkers,false);
-        Checker wc7 = new Checker(5,6,true,checkers,false);
-        Checker wc8 = new Checker(7,6,true,checkers,false);
-        Checker wc9 = new Checker(0,5,true,checkers,false);
-        Checker wc10 = new Checker(2,5,true,checkers,false);
-        Checker wc11 = new Checker(4,5,true,checkers,false);
-        Checker wc12 = new Checker(6,5,true,checkers,false);
-        
-        Checker bc1 = new Checker(1,0,false,checkers,false);
-        Checker bc2 = new Checker(3,0,false,checkers,false);
-        Checker bc3 = new Checker(5,0,false,checkers,false);
-        Checker bc4 = new Checker(7,0,false,checkers,false);
-        Checker bc5 = new Checker(0,1,false,checkers,false);
-        Checker bc6 = new Checker(2,1,false,checkers,false);
-        Checker bc7 = new Checker(4,1,false,checkers,false);
-        Checker bc8 = new Checker(6,1,false,checkers,false);
-        Checker bc9 = new Checker(1,2,false,checkers,false);
-        Checker bc10 = new Checker(3,2,false,checkers,false);
-        Checker bc11 = new Checker(5,2,false,checkers,false);
-        Checker bc12 = new Checker(7,2,false,checkers,false);
+        createPawns();
         /**
          * Panel with the checkers board and pawns.
          * Adding the pawns as an objects.
@@ -130,6 +107,11 @@ public class NewGame implements ActionListener, KeyListener {
         textArea.setEditable(false);
         textArea.setLineWrap(true);
         scroll = new JScrollPane(textArea);
+        /**
+         * Set the textArea always scroll to bottom.
+         */
+        DefaultCaret caret = (DefaultCaret) textArea.getCaret();
+        caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
         
         checkersBoard.add(eastPanel, BorderLayout.EAST);
         eastPanel.setBackground(Color.decode(bColour));
@@ -219,8 +201,12 @@ public class NewGame implements ActionListener, KeyListener {
                 try{
                     selectedChecker.Move(e.getX()/100, e.getY()/100);
                     if(positionHistoryY != selectedChecker.positionY){
-                        if(whosTurn == false){whosTurn = true;}
-                        else {whosTurn = false;}
+                        if(whosTurn == false){
+                            whosTurn = true;
+                        }
+                        else {
+                            whosTurn = false;
+                        }
                     }
                     selectedChecker = null;
                     OutputStream outputStream = socket.getOutputStream();
@@ -228,6 +214,7 @@ public class NewGame implements ActionListener, KeyListener {
                     objectOutputStream.writeObject(checkers);
                     objectOutputStream.writeBoolean(whosTurn);
                     objectOutputStream.flush();
+                    checkIfPlayerWin();
                     frame.repaint();
                 }catch(NullPointerException ex){
                 }catch(IOException exc){
@@ -243,17 +230,49 @@ public class NewGame implements ActionListener, KeyListener {
             }
         });
     }
-
+    /**
+     * Create pawns method
+     */
+    public void createPawns(){
+        Checker wc1 = new Checker(0,7,true,checkers,false);
+        Checker wc2 = new Checker(2,7,true,checkers,false);
+        Checker wc3 = new Checker(4,7,true,checkers,false);
+        Checker wc4 = new Checker(6,7,true,checkers,false);
+        Checker wc5 = new Checker(1,6,true,checkers,false);
+        Checker wc6 = new Checker(3,6,true,checkers,false);
+        Checker wc7 = new Checker(5,6,true,checkers,false);
+        Checker wc8 = new Checker(7,6,true,checkers,false);
+        Checker wc9 = new Checker(0,5,true,checkers,false);
+        Checker wc10 = new Checker(2,5,true,checkers,false);
+        Checker wc11 = new Checker(4,5,true,checkers,false);
+        Checker wc12 = new Checker(6,5,true,checkers,false);
+        
+        Checker bc1 = new Checker(1,0,false,checkers,false);
+        Checker bc2 = new Checker(3,0,false,checkers,false);
+        Checker bc3 = new Checker(5,0,false,checkers,false);
+        Checker bc4 = new Checker(7,0,false,checkers,false);
+        Checker bc5 = new Checker(0,1,false,checkers,false);
+        Checker bc6 = new Checker(2,1,false,checkers,false);
+        Checker bc7 = new Checker(4,1,false,checkers,false);
+        Checker bc8 = new Checker(6,1,false,checkers,false);
+        Checker bc9 = new Checker(1,2,false,checkers,false);
+        Checker bc10 = new Checker(3,2,false,checkers,false);
+        Checker bc11 = new Checker(5,2,false,checkers,false);
+        Checker bc12 = new Checker(7,2,false,checkers,false);
+    }
+    
     @Override
     public void keyTyped(KeyEvent e) {
     }
-
+    /**
+     * Keyboard event which letting you to use enter in chat.
+     * @param e 
+     */
     @Override
     public void keyPressed(KeyEvent e) {
         if(e.getKeyCode() == e.VK_ENTER){
             sendMessage();
         }
-        
     }
 
     @Override
@@ -373,6 +392,34 @@ public class NewGame implements ActionListener, KeyListener {
         
         switch(g.getActionCommand()){
             case "Send" -> sendMessage();
+        }
+    }
+    /**
+     * 
+     */
+    protected int counterWhite = 12;
+    protected int counterBrown = 12;
+    public void checkIfPlayerWin(){
+        
+        for(Checker c: checkers){
+            if(checkers.contains(c.white)){
+                continue;
+            } else {
+//                JOptionPane.showMessageDialog(
+//                    null, 
+//                    "Sorry!!! You lost."+"\n"+"Do you want to play again?", 
+//                    "InfoBox: Winner", 
+//                    JOptionPane.INFORMATION_MESSAGE);
+            }
+        }
+        if(counterWhite == 0) {
+//            JOptionPane.showMessageDialog(
+//                    null, 
+//                    "Congratulations! You won."+"\n"+"Do you want to play again?", 
+//                    "InfoBox: Winner", 
+//                    JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            
         }
     }
     /**
