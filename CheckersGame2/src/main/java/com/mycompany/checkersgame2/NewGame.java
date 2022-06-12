@@ -214,7 +214,6 @@ public class NewGame implements ActionListener, KeyListener {
                     objectOutputStream.writeObject(checkers);
                     objectOutputStream.writeBoolean(whosTurn);
                     objectOutputStream.flush();
-                    checkIfPlayerWin();
                     frame.repaint();
                 }catch(NullPointerException ex){
                 }catch(IOException exc){
@@ -279,54 +278,6 @@ public class NewGame implements ActionListener, KeyListener {
     public void keyReleased(KeyEvent e) {
     }
     /**
-     * Thread class which reading data(our list of pawns) from server.
-     */
-    private class ReadDataFromServer extends Thread {
-        
-        Socket s;
-
-        public ReadDataFromServer(Socket s) {
-            this.s = s;
-        }
-        
-        @SuppressWarnings("unchecked")
-        @Override
-        public void run(){
-            while(true){
-                try{
-                    InputStream inputStream = s.getInputStream();
-                    ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
-                    checkers = (LinkedList<Checker>)objectInputStream.readObject();
-                    whosTurn = objectInputStream.readBoolean();
-                }catch(IOException e){
-                    System.out.println("IOException in ReadDataFromServer");
-                    break;
-                }catch(ClassNotFoundException ex){
-                    System.out.println("ClassNotFoundException in ReadDataFromServer");
-                    break;
-                }
-            }
-        }
-    }
-    /**
-     * Thread that is needed for repainting the checkers board.
-     */
-    private class RefreshBoard extends Thread {
-        
-        NewGame dialog;
-
-        public RefreshBoard(NewGame dialog) {
-            this.dialog = dialog;
-        }
-        
-        @Override
-        public void run(){
-            while(true){
-                dialog.frame.repaint();
-            }
-        }
-    }
-    /**
      * Connecting with the server. Two sockets needed for pawns and chat.
      */
     void connect() {
@@ -344,27 +295,6 @@ public class NewGame implements ActionListener, KeyListener {
             textArea.append("You are player: "+playerID);
         } catch (IOException e) {
             textArea.append("Not connected\n");
-        }
-    }
-    /**
-     * Reading output from server and appending it to chat.
-     */
-    private class ReadStringFromServer extends Thread {
-        
-        String line;
-        
-        @Override
-        public void run(){
-            try{
-                in = new BufferedReader(
-                    new InputStreamReader(socketChat.getInputStream()));
-                while(true){
-                    line = in.readLine();
-                    textArea.append("\n"+line);
-                }
-            }catch(IOException e){
-                System.out.println("IOexception in ReadStringFromServer run()");
-            }
         }
     }
     /**
@@ -395,33 +325,58 @@ public class NewGame implements ActionListener, KeyListener {
         }
     }
     /**
-     * 
+     * Show window if player win or lose.
      */
-    protected int counterWhite = 12;
-    protected int counterBrown = 12;
     public void checkIfPlayerWin(){
         
+        int checkWinCounterWhite = 0;
+        int checkWinCounterBrown = 0;
+        
         for(Checker c: checkers){
-            if(checkers.contains(c.white)){
-                continue;
+            if(c.white == true){
+                checkWinCounterWhite+=1;
             } else {
-//                JOptionPane.showMessageDialog(
-//                    null, 
-//                    "Sorry!!! You lost."+"\n"+"Do you want to play again?", 
-//                    "InfoBox: Winner", 
-//                    JOptionPane.INFORMATION_MESSAGE);
-            }
+                checkWinCounterBrown+=1;
+            } 
         }
-        if(counterWhite == 0) {
-//            JOptionPane.showMessageDialog(
-//                    null, 
-//                    "Congratulations! You won."+"\n"+"Do you want to play again?", 
-//                    "InfoBox: Winner", 
-//                    JOptionPane.INFORMATION_MESSAGE);
-        } else {
-            
+        if(checkWinCounterWhite == 0 && playerID == 1){
+            JOptionPane.showMessageDialog(
+                    null, 
+                    "Sorry!!! You lost.", 
+                    "InfoBox: Looser", 
+                    JOptionPane.INFORMATION_MESSAGE);
+            frame.dispose();
+            RefreshBoard.currentThread().stop();
+        }
+        if(checkWinCounterBrown == 0 && playerID == 2){
+            JOptionPane.showMessageDialog(
+                    null, 
+                    "Sorry!!! You lost.", 
+                    "InfoBox: Looser", 
+                    JOptionPane.INFORMATION_MESSAGE);
+            frame.dispose();
+            RefreshBoard.currentThread().stop();
+        }
+        if(checkWinCounterWhite == 0 && playerID == 2){
+            JOptionPane.showMessageDialog(
+                    null, 
+                    "Congratulations!!! You won.", 
+                    "InfoBox: Winner", 
+                    JOptionPane.INFORMATION_MESSAGE);
+            frame.dispose();
+            RefreshBoard.currentThread().stop();
+        }
+        if(checkWinCounterBrown == 0 && playerID == 1){
+            JOptionPane.showMessageDialog(
+                    null, 
+                    "Congratulations!!! You won.", 
+                    "InfoBox: Winner", 
+                    JOptionPane.INFORMATION_MESSAGE);
+            frame.dispose();
+            RefreshBoard.currentThread().stop();
         }
     }
+    
     /**
      * Getting the checker position x and y.
      * @param x
@@ -437,6 +392,79 @@ public class NewGame implements ActionListener, KeyListener {
             }
         }
         return null;
+    }
+     /**
+     * Thread that is needed for repainting the checkers board.
+     */
+    private class RefreshBoard extends Thread {
+        
+        NewGame dialog;
+
+        public RefreshBoard(NewGame dialog) {
+            this.dialog = dialog;
+        }
+        
+        @Override
+        public void run(){
+            while(true){
+                try{
+                    dialog.frame.repaint();
+                    checkIfPlayerWin();
+                } catch(NullPointerException e){  
+                }
+            }
+        }
+    }
+    /**
+     * Reading output from server and appending it to chat.
+     */
+    private class ReadStringFromServer extends Thread {
+        
+        String line;
+        
+        @Override
+        public void run(){
+            try{
+                in = new BufferedReader(
+                    new InputStreamReader(socketChat.getInputStream()));
+                while(true){
+                    line = in.readLine();
+                    textArea.append("\n"+line);
+                }
+            }catch(IOException e){
+                System.out.println("IOexception in ReadStringFromServer run()");
+            }
+        }
+    }
+    /**
+     * Thread class which reading data(our list of pawns) from server.
+     */
+    private class ReadDataFromServer extends Thread {
+        
+        Socket s;
+
+        public ReadDataFromServer(Socket s) {
+            this.s = s;
+        }
+        
+        @SuppressWarnings("unchecked")
+        @Override
+        public void run(){
+            while(true){
+                try{
+                    InputStream inputStream = s.getInputStream();
+                    ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
+                    checkers = (LinkedList<Checker>)objectInputStream.readObject();
+                    whosTurn = objectInputStream.readBoolean();
+                }catch(IOException e){
+                    System.out.println("IOException in ReadDataFromServer");
+                    break;
+                }catch(ClassNotFoundException ex){
+                    System.out.println("ClassNotFoundException in ReadDataFromServer");
+                    break;
+                }
+            }
+        }
     }
 } 
 

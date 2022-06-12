@@ -29,6 +29,7 @@ public class Checker implements Serializable {
     protected boolean white = false;
     protected boolean isQueen = false;
     protected boolean opponentMove = false;
+    NewGame dialog;
     /**
      * Constructor
      * @param positionX
@@ -308,7 +309,6 @@ public class Checker implements Serializable {
                 y = this.positionY*100+5;
                 return;
             }
-            System.out.println((NewGame.selectedChecker.positionX-positionX) + " " + (NewGame.selectedChecker.positionY-positionY)+" "+NewGame.selectedChecker.isQueen);
             this.positionX = positionX;
             this.positionY = positionY;
             x = positionX*100+5;
