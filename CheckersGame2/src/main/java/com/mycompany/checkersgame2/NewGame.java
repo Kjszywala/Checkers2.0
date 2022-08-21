@@ -70,27 +70,27 @@ public class NewGame implements ActionListener, KeyListener {
         board=new JPanel(){
             @Override
             public void paint(Graphics g) {
-            boolean white=true;
-            for(int y = 0; y < 8; y++){
-                for(int x = 0; x < 8; x++){
-                    if(white){
-                        g.setColor(Color.WHITE);
-                    }else{
-                        g.setColor(Color.BLACK);
+                boolean white=true;
+                for(int y = 0; y < 8; y++){
+                    for(int x = 0; x < 8; x++){
+                        if(white){
+                            g.setColor(Color.WHITE);
+                        }else{
+                            g.setColor(Color.BLACK);
+                        }
+                        g.fillRect(x*100, y*100, 100, 100);
+                        white=!white;
                     }
-                    g.fillRect(x*100, y*100, 100, 100);
                     white=!white;
-                }
-                white=!white;
-                }
-                for(Checker c: checkers) {
-                    if(c.white) {
-                        g.setColor(Color.decode("#c7c4c3"));
-                    } else {
-                        g.setColor(Color.decode("#803f1f"));
                     }
-                    g.fillOval(c.x, c.y, size, size);
-                }
+                    for(Checker c: checkers) {
+                        if(c.white) {
+                            g.setColor(Color.decode("#c7c4c3"));
+                        } else {
+                            g.setColor(Color.decode("#803f1f"));
+                        }
+                        g.fillOval(c.x, c.y, size, size);
+                    }
             }
         };
         frame.add(checkersBoard);
